@@ -13,14 +13,62 @@ using std::cout;
 using std::endl;
 using std::string;
 
+const static string RTSP_VERSION = "RTSP/1.0 ";
+const static string OK = "200 OK\r\n";
+const static string UNAUTHORIZED = "401 Unauthorized\r\n";
+const static string NOTFOUND = "404 Not Found\r\n";
+const static string INTERNAL = "500 Internal Server Error\r\n";
+
+const static string SERVER = "Server: RTSPLearn 1.0.0\r\n";
+const static string PUBLIC = "OPTIONS, DESCRIBE, PLAY, PAUSE, SETUP, ANNOUNCE, TEARDOWN\r\n";
+
+
+const static string TEST_DESCRIBE_STRING = "RTSP/1.0 200 OK\r\n"
+                                           "      CSeq: 2\r\n"
+                                           "      Content-Type: application/sdp\r\n"
+                                           "      Content-Length: 210 \r\n"
+                                           "      m=video 0 RTP/AVP 96\r\n"
+                                           "      a=control:streamid=0\r\n"
+                                           "      a=range:npt=0-7.741000\r\n"
+                                           "      a=length:npt=7.741000\r\n"
+                                           "      a=rtpmap:96 MP4V-ES/5544\r\n"
+                                           "      a=mimetype:string;\"video/MP4V-ES\"\r\n"
+                                           "      a=AvgBitRate:integer;304018\n"
+                                           "      a=StreamName:string;\"hinted video track\"\r\n"
+                                           "      m=audio 0 RTP/AVP 97\r\n"
+                                           "      a=control:streamid=1\r\n"
+                                           "      a=range:npt=0-7.712000\r\n"
+                                           "      a=length:npt=7.712000\r\n"
+                                           "      a=rtpmap:97 mpeg4-generic/32000/2\r\n"
+                                           "      a=mimetype:string;\"audio/mpeg4-generic\"\r\n"
+                                           "      a=AvgBitRate:integer;65790\r\n"
+                                           "      a=StreamName:string;\"hinted audio track\"\r\n\r\n";
+
+
+static std::string gotRTSP_STATUS_CODE(int code){
+    switch (code) {
+        case 200: {
+            return RTSP_VERSION;
+        }
+        case 401: {
+            return UNAUTHORIZED;
+        }
+        case 404: {
+            return NOTFOUND;
+        }
+        default: {
+            return INTERNAL;
+        }
+    }
+}
+
+
 Rtsp::Rtsp(int fd)
-:   fd_(fd)
+:   fd_(fd),
+    decode_index_(0),
+    recv_len_(0)
 {
-
     buf_ = new char[buf_size];
-    decode_index_ = 0;
-    recv_len_ = 0;
-
 }
 
 Rtsp::~Rtsp() {
@@ -30,15 +78,16 @@ Rtsp::~Rtsp() {
 }
 
 
-void Rtsp::accept() {
+bool Rtsp::accept() {
     int len = ::read(fd_, buf_, buf_size);
     if ( len == 0 ){
         // 关闭操作
-        return;
+        return false;
     }
     recv_len_ += len;
-    parser_entry();
-    PrintRequest();
+    return true;
+
+
 }
 
 
@@ -66,7 +115,7 @@ bool Rtsp::find_space(char *data, int& first, int& second) {
 void Rtsp::PrintRequest() {
 
     cout << "--------------------------------------------" << endl;
-    cout << "操作: " << option_ << endl;
+    cout << "操作: " << optionString_ << endl;
     cout << "地址: " << request_ << endl;
     cout << "版本: " << version_ << endl;
 
@@ -75,7 +124,66 @@ void Rtsp::PrintRequest() {
         cout << Iter->first << ": " << Iter->second << endl;
     }
 
+}
 
+
+void Rtsp::optionRespond() {
+    respond_ += RTSP_VERSION;
+    respond_ += OK;
+    string cseq = "CSeq: " + headers_["CSeq"] + "\r\n";
+    respond_ += cseq;
+    respond_ += SERVER;
+    respond_ += PUBLIC;
+    respond_ += "\r\n";
+    write();
+
+}
+
+void Rtsp::describeRespond() {
+    respond_ += TEST_DESCRIBE_STRING;
+    write();
+}
+
+bool Rtsp::write() {
+
+    int len = ::write(fd_, respond_.c_str(), respond_.size());
+    if ( len < respond_.size() ){
+        cout << "write not incomplete!" << endl;
+        return false;
+    }
+    return true;
+
+}
+
+void Rtsp::process() {
+
+    bool ret = accept();
+    if ( !ret )
+        cout << "accept() error!" << endl;
+
+    parser_entry();
+    PrintRequest();
+    switch ( option_ ) {
+        case OPTIONS: {
+            return optionRespond();
+        }
+        case DESCRIBE: {
+            cout << "describe" << endl;
+            describeRespond();
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+
+}
+
+
+void Rtsp::reSet() {
+    decode_index_ = 0;
+    recv_len_ = 0;
 }
 
 Rtsp::Options Rtsp::parser_header(char *target) {
@@ -119,7 +227,8 @@ Rtsp::Options Rtsp::parser_request(char *target, ParserStatus &status) {
     target[second_space] = '\0';
     version_ = string(version);
     request_ = string(url);
-    Options ret = detectOptions(string(option));
+    optionString_ = string(option);
+    Options ret = detectOptions(optionString_);
     if ( ret == ERROR )
         return ERROR;
     status = ParserHeader;

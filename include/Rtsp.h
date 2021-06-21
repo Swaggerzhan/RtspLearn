@@ -8,6 +8,10 @@
 #include <iostream>
 #include <map>
 
+//////////////////////////////////////////////////////
+/// TODO:将read和write分离取出，read和write可以由外界调用
+
+
 class Rtsp{
 public:
 
@@ -25,16 +29,16 @@ public:
     };
 
     enum Options{
-        DESCRIBE,
-        OPTIONS,
-        PLAY,
-        PAUSE,
-        SETUP,
-        TEARDOWN,
-        RECORD,
-        ERROR = -1,
-        CONTINUE,
-        END,
+        DESCRIBE,           // DESCRIBE请求
+        OPTIONS,            // OPTIONS请求
+        PLAY,               // 播放请求
+        PAUSE,              // PAUSE暂停请求
+        SETUP,              // SETUP请求
+        TEARDOWN,           // TEARDOWN请求
+        RECORD,             // RECORD请求
+        ERROR = -1,         // 错误
+        CONTINUE,           // 请求需要继续
+        END,                // 请求结尾
     };
 
     typedef std::pair<std::string, std::string> Pair;
@@ -43,7 +47,11 @@ public:
 
     ~Rtsp();
 
-    void accept();
+    bool accept();
+
+    void process();
+
+    bool write();
 
 private:
 
@@ -85,18 +93,32 @@ private:
     // FOR DEBUG
     void PrintRequest();
 
+    /* 清空请求解析进度 */
+    void reSet();
+
+    void packetRespond();
+
+    void optionRespond();
+    void describeRespond();
+
 private:
 
     const int buf_size = 4096;
 
-    char* buf_;             // 缓冲区
-    int fd_;                // 套接字fd
-    std::string version_;   // RTSP协议版本
-    std::string request_;   // RTSP请求
-    Options option_;    // 当前RTSP指
+    char* buf_;                 // 缓冲区
+    int fd_;                    // 套接字fd
+    std::string version_;       // RTSP协议版本
+    std::string request_;       // RTSP请求
+    std::string optionString_;  // FOR DEBUG
+    Options option_;            // 当前RTSP指令
 
+    //////////////////////////////////////////////////////////////
+    /// 每次请求都需要独立清空
     int decode_index_;      // 解析行进度
     int recv_len_;          // 收到字符串长度
+
+    std::string respond_;   // 返回头
+    //////////////////////////////////////////////////////////////
 
     std::map<std::string, std::string> headers_;    // 头部字段
 
