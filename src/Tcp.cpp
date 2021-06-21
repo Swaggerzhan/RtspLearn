@@ -29,7 +29,12 @@ Tcp::Tcp(string address, int port)
     local_address->sin_family = AF_INET;
     local_address->sin_addr.s_addr = inet_addr(address_.c_str());
     local_address->sin_port = htons(port_);
+
+    int reuse = 1;
+    setsockopt(listenfd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
     int ret = ::bind(listenfd_, (sockaddr*)local_address, sizeof(*local_address));
+
     if ( ret < 0 ){
         cerr << "bind() address Error! " << endl;
         exit(ret);
