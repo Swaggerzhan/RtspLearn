@@ -12,11 +12,13 @@ class Channel{
 public:
 
     Channel();
+    Channel(int fd);
 
     ~Channel();
 
     /* 设置fd，并且初始化channel */
     void setfd(int fd);
+    int getfd() const;
 
     bool send();
 

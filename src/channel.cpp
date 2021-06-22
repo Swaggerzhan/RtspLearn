@@ -19,8 +19,19 @@ Channel::Channel()
 }
 
 
+Channel::Channel(int fd)
+:   fd_(fd),
+    buf_(new Buffer(kBufSize)),
+    buf2_(new Buffer(kBufSize))
+{}
+
+
 Channel::~Channel() {
 
+}
+
+int Channel::getfd() const {
+    return fd_;
 }
 
 
