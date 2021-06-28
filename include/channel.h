@@ -7,6 +7,7 @@
 #include <memory>
 
 class Buffer;
+class EventLoop;
 
 class Channel{
 public:
@@ -39,17 +40,18 @@ public:
 
 private:
 
-    int recvCurLen_;        // 当前收到的长度
+    int recvCurLen_;                    // 当前收到的长度
 
-    int writeTotalLen_;     // 写入总长度
-    int writeCurLen_;       // 写入当前长度
+    int writeTotalLen_;                 // 写入总长度
+    int writeCurLen_;                   // 写入当前长度
 
-    int fd_;                // 套接字fd
-    bool isOneShot_;        // EPOLL中的flag，为true需要重新加入epoll
-    //char* buf_;             // 接收缓冲区
+    int fd_;                            // 套接字fd
+    bool isOneShot_;                    // EPOLL中的flag，为true需要重新加入epoll
+    EventLoop* belongEventLoop_;        // 所属epoll
+    //char* buf_;                       // 接收缓冲区
 
-    std::unique_ptr<Buffer> buf_;   // 接收缓冲区
-    std::unique_ptr<Buffer> buf2_;  // 发送缓冲区
+    std::unique_ptr<Buffer> buf_;       // 接收缓冲区
+    std::unique_ptr<Buffer> buf2_;      // 发送缓冲区
 
     ////////////////////////////////////////////////////////////////
     //// for debug
