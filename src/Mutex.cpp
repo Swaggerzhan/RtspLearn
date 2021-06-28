@@ -26,6 +26,10 @@ void Mutex::unlock() {
     pthread_mutex_unlock(&mutex_);
 }
 
+pthread_mutex_t* Mutex::getMutex() {
+    return &mutex_;
+}
+
 
 MutexLockGuard::MutexLockGuard(Mutex &mutex)
 :   mutex_(mutex)
@@ -35,4 +39,22 @@ MutexLockGuard::MutexLockGuard(Mutex &mutex)
 
 MutexLockGuard::~MutexLockGuard() {
     mutex_.unlock();
+}
+
+Condition::Condition(Mutex &mutex)
+:   mutex_(mutex)
+{
+    pthread_cond_init(&cond_, nullptr);
+}
+
+void Condition::wait() {
+    pthread_cond_wait(&cond_, mutex_.getMutex());
+}
+
+void Condition::notify() {
+    pthread_cond_signal(&cond_);
+}
+
+void Condition::notifyAll() {
+    pthread_cond_broadcast(&cond_);
 }

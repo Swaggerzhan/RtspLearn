@@ -13,7 +13,8 @@ const int Channel::kBufSize = 4096;
 
 Channel::Channel()
 :   buf_(new Buffer(kBufSize)),
-    buf2_(new Buffer(kBufSize))
+    buf2_(new Buffer(kBufSize)),
+    isClosed_(true)     // 初始化的时候没有fd，后续由setfd进行设置
 {
 
 }
@@ -22,7 +23,8 @@ Channel::Channel()
 Channel::Channel(int fd)
 :   fd_(fd),
     buf_(new Buffer(kBufSize)),
-    buf2_(new Buffer(kBufSize))
+    buf2_(new Buffer(kBufSize)),
+    isClosed_(false)    // 初始化就有fd，直接非关闭状态
 {}
 
 
@@ -34,7 +36,10 @@ int Channel::getfd() const {
     return fd_;
 }
 
-
+/**
+ * @param 需要设置的fd
+ * 会将频道状态设置为使用状态 isClosed = false
+ * */
 void Channel::setfd(int fd) {
     assert(isClosed_);
     fd_ = fd;

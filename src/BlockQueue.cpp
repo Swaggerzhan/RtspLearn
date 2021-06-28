@@ -13,6 +13,10 @@ BlockQueue::BlockQueue(int size)
     queue_(),
     mutex_(new Mutex)
 {
+    /* 初始化队列 */
+    for (int i=0; i<size_; i++){
+        queue_.push(new Channel);
+    }
 
 }
 

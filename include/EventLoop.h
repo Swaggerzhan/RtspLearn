@@ -21,7 +21,7 @@ public:
 
     void updateInLoop(Channel* channel);            // 管道更新
     void removeInLoop(Channel* channel);            // 管道删除
-    void addInLoop();                               // 管道增加
+    void addInLoop(int fd);                         // 管道增加
 
 
 private:

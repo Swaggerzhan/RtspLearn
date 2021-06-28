@@ -17,6 +17,7 @@ public:
     ~Mutex();
     void lock();
     void unlock();
+    pthread_mutex_t* getMutex();
 
 private:
     pthread_mutex_t mutex_;     // 互斥锁
@@ -39,7 +40,7 @@ class Condition{
     // TODO: 实现
 
 public:
-    Condition();
+    Condition(Mutex &mutex);
     ~Condition();
 
     void wait();
@@ -47,6 +48,8 @@ public:
     void notifyAll();
 
 private:
+    pthread_cond_t cond_;   // 条件变量
+    Mutex &mutex_;          // 互斥量
 
 };
 

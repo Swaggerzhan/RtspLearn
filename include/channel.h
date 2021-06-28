@@ -26,6 +26,13 @@ public:
 
     void closeConn();
 
+    /////////////////////////////////////////////////////////
+    /// for debug
+    bool status() { return isClosed_; }
+    bool setClose() { isClosed_ = true; }
+    /////////////////////////////////////////////////////////
+    bool isOneShot() { return isOneShot_; }
+
 public:
 
     const static int kBufSize;
@@ -38,6 +45,7 @@ private:
     int writeCurLen_;       // 写入当前长度
 
     int fd_;                // 套接字fd
+    bool isOneShot_;        // EPOLL中的flag，为true需要重新加入epoll
     //char* buf_;             // 接收缓冲区
 
     std::unique_ptr<Buffer> buf_;   // 接收缓冲区
