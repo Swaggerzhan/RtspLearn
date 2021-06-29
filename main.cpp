@@ -8,7 +8,6 @@ int main() {
     Tcp tcp("0.0.0.0", 8888);
     tcp.run();
 
-    int x;
 
 //    std::string options = "OPTIONS";
 //    if (strncasecmp(options.c_str(), "OPTIONS", 7) == 0)
