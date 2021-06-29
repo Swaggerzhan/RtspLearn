@@ -12,6 +12,8 @@
 /// TODO:将read和write分离取出，read和write可以由外界调用
 
 
+class Channel;
+
 class Rtsp{
 public:
 
@@ -44,6 +46,8 @@ public:
     typedef std::pair<std::string, std::string> Pair;
 
     Rtsp(int fd);
+
+    Rtsp();
 
     ~Rtsp();
 
@@ -104,6 +108,9 @@ private:
 private:
 
     const int buf_size = 4096;
+
+
+    Channel* channel_;          // Rtsp所使用的管道
 
     char* buf_;                 // 缓冲区
     int fd_;                    // 套接字fd

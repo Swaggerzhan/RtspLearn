@@ -5,6 +5,7 @@
 #include "../include/channel.h"
 #include <unistd.h>
 #include "../include/Buffer.h"
+#include "../include/Rtsp.h"
 #include <cassert>
 #include <cerrno>
 
@@ -14,6 +15,7 @@ const int Channel::kBufSize = 4096;
 Channel::Channel()
 :   buf_(new Buffer(kBufSize)),
     buf2_(new Buffer(kBufSize)),
+    rtsp_(new Rtsp),
     isClosed_(true)     // 初始化的时候没有fd，后续由setfd进行设置
 {
 
@@ -46,11 +48,12 @@ void Channel::setfd(int fd) {
     isClosed_ = false; // 管道已被使用
 }
 
-
+///////////////////////////////////////////////////////////////////////////////////////////
+/// 非阻塞型函数，暂定
 /** send函数开放，可以由IO线程调用，也可以由处理线程尝试调用
  *  当处理线程调用后返回失败将交由IO线程进行处理
  * */
-bool Channel::send() {
+bool Channel::send2() {
     assert(!isClosed_);
     while (writeCurLen_ < writeTotalLen_){
         int roundLen = ::write(fd_, buf2_->curPoint(), writeTotalLen_);
@@ -74,14 +77,14 @@ bool Channel::send() {
 }
 
 
-bool Channel::recv() {
+bool Channel::recv2() {
     assert(!isClosed_);
     while ( true ){
         int len = ::read(fd_, buf_->curPoint(), kBufSize);
         if ( len < 0 ){
             // TODO: 通过errno判断
             /* 读取到尾部了，非阻塞套接字正常返回 */
-            if (errno == EAGAIN || errno == EWOULDBLOCK){
+            if ( errno == EAGAIN || errno == EWOULDBLOCK ){
                 return true; // 将true返回给上层
             }
         }else if (len == 0){ // 关闭事件
@@ -92,6 +95,9 @@ bool Channel::recv() {
         }
     }
 }
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /* 关闭套接字，尽量不要直接调用，应该由上层协议来调用 */
 void Channel::closeConn() {

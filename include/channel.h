@@ -8,6 +8,7 @@
 
 class Buffer;
 class EventLoop;
+class Rtsp;
 
 class Channel{
 public:
@@ -22,8 +23,10 @@ public:
     int getfd() const;
 
     bool send();
-
     bool recv();
+
+    bool send2();
+    bool recv2();
 
     void closeConn();
 
@@ -48,6 +51,7 @@ private:
     int fd_;                            // 套接字fd
     bool isOneShot_;                    // EPOLL中的flag，为true需要重新加入epoll
     EventLoop* belongEventLoop_;        // 所属epoll
+    std::unique_ptr<Rtsp> rtsp_;        // 所属rtsp解析器
     //char* buf_;                       // 接收缓冲区
 
     std::unique_ptr<Buffer> buf_;       // 接收缓冲区
