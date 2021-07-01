@@ -24,6 +24,9 @@ public:
     /* 拿到结尾指针 */
     char* end();
 
+    /* 获取缓冲区大小 */
+    int size();
+
     /**
      * 通过curPoint拿到指针后需要将长度通过addCurSize来重新确定长度
      * */

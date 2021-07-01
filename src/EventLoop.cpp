@@ -6,6 +6,7 @@
 #include "../include/EventLoop.h"
 #include "../include/channel.h"
 #include "../include/BlockQueue.h"
+#include "../include/Rtsp.h"
 #include <iostream>
 #include <cerrno>
 #include <cstring>
@@ -91,11 +92,8 @@ EventLoop::~EventLoop() {
 }
 
 
-void EventLoop::addInLoop(int fd) {
-    Channel* channel = queue_->pop(); // 从队列中取出未使用的channel
-    // for debug
-    assert(channel->status());      // 检测管道是否未使用
-    channel->setfd(fd);
+void EventLoop::addInLoop(Channel* channel) {
+
     addToEpoll(epfd_, channel);     // 真正的添加到epoll中
 
 }
@@ -114,6 +112,36 @@ void EventLoop::updateInLoop(Channel *channel) {
     // for debug
     assert(!channel->status());
     updateToEpoll(epfd_, channel);
+}
+
+
+void EventLoop::poll() {
+    int ret = epoll_wait(epfd_, eventArray_, kOpenMax, 0);
+    for (int i=0; i<ret; i++){
+        Channel* channel = static_cast<Channel*>(eventArray_[i].data.ptr);
+        if ( channel == &*listenChannel_ ){ // 监听频道
+
+        } else {
+            activeChannel_.push(channel);
+        }
+    }
+}
+
+
+void EventLoop::loop() {
+    while ( !isQuit_ ){
+        poll();         // 抓取活跃频道
+
+        while ( !activeChannel_.empty() ){
+            Channel* channel = static_cast<Channel*>(activeChannel_.front());
+            activeChannel_.pop();
+            // TODO: 修改为线程池的运行方式
+            Rtsp* rtsp = channel->getRtspController();
+            rtsp->process();    // Rtsp解析入口，其中保存各种客户信息及状态
+        }
+
+
+    }
 }
 
 

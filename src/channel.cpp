@@ -8,6 +8,11 @@
 #include "../include/Rtsp.h"
 #include <cassert>
 #include <cerrno>
+#include <iostream>
+
+using std::endl;
+using std::cout;
+using std::cerr;
 
 
 const int Channel::kBufSize = 4096;
@@ -32,6 +37,10 @@ Channel::Channel(int fd)
 
 Channel::~Channel() {
 
+}
+
+Rtsp* Channel::getRtspController() {
+    return &*rtsp_;
 }
 
 int Channel::getfd() const {
@@ -96,6 +105,33 @@ bool Channel::recv2() {
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+bool Channel::send() {
+    assert( !isClosed_ );
+
+    int len = ::write(fd_, buf2_->begin(), buf2_->size());
+    if ( len != buf2_->size() ){
+        // for debug
+        cerr << "write size incorrect !" << endl;
+        return false;
+    }
+    return true;
+
+}
+
+
+bool Channel::recv() {
+    assert( !isClosed_ );
+
+    int len = ::read(fd_, buf_->begin(), kBufSize);
+    if ( len <= 0 )
+        return false;
+
+    return true;
+}
+
 
 
 

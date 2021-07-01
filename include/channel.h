@@ -25,9 +25,13 @@ public:
     bool send();
     bool recv();
 
+    Rtsp* getRtspController();
+
+    /////////////////////////////////////////////////////////
+    /// 非阻塞
     bool send2();
     bool recv2();
-
+    /////////////////////////////////////////////////////////
     void closeConn();
 
     /////////////////////////////////////////////////////////
@@ -42,11 +46,12 @@ public:
     const static int kBufSize;
 
 private:
-
+    /////////////////////////////////////////////////////////
+    /// 非阻塞
     int recvCurLen_;                    // 当前收到的长度
-
     int writeTotalLen_;                 // 写入总长度
     int writeCurLen_;                   // 写入当前长度
+    /////////////////////////////////////////////////////////
 
     int fd_;                            // 套接字fd
     bool isOneShot_;                    // EPOLL中的flag，为true需要重新加入epoll

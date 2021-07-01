@@ -35,3 +35,7 @@ char* Buffer::end() {
     return buf_ + bufSize_;
 }
 
+int Buffer::size() {
+    return strlen(buf_);
+}
+
