@@ -28,6 +28,8 @@ public:
     Rtsp* getRtspController();
     /* 获取接收缓冲区，主要是用于解析 */
     Buffer* getRecvBuffer();
+    /* 获取发送缓冲区，用于响应 */
+    Buffer* getSendBuffer();
 
     /////////////////////////////////////////////////////////
     /// 非阻塞

@@ -1,16 +1,20 @@
 #include <iostream>
-#include "include/Tcp.h"
+#include "include/EventLoop.h"
+#include "include/Socket.h"
 #include <cstring>
+
+
+using std::string;
 
 int main() {
 
 
-    Tcp tcp("0.0.0.0", 8888);
-    tcp.run();
+//    Tcp tcp("0.0.0.0", 8888);
+//    tcp.run();
+    Socket s( string("0.0.0.0"), 9999 );
+    EventLoop loop(s.getfd());
+    loop.loop();    // 启动主循环
 
 
-//    std::string options = "OPTIONS";
-//    if (strncasecmp(options.c_str(), "OPTIONS", 7) == 0)
-//        std::cout << "got" << std::endl;
 
 }

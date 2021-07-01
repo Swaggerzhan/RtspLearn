@@ -39,6 +39,11 @@ Channel::~Channel() {
 
 }
 
+
+Buffer* Channel::getRecvBuffer() {
+    return &*buf_;
+}
+
 Rtsp* Channel::getRtspController() {
     return &*rtsp_;
 }

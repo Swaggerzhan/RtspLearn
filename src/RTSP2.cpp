@@ -30,7 +30,7 @@ void RTSP::Process() {
 
     /* 解析并得到解析状态，通过状态来判断 */
     Options parserStatus = parser();
-
+    printHeaders();             // 测试
     // TODO: 回复报文等
 
 
