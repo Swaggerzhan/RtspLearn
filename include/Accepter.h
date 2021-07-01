@@ -18,6 +18,8 @@ public:
     ~Accepter();
     void accept();
 
+    Channel* getChannel();
+
 private:
     // 外部传入进来后将由Accpeter进行管理
     std::unique_ptr<Channel> channel_;          // 监听套接字

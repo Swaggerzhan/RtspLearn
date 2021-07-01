@@ -17,10 +17,7 @@ using std::cerr;
 Accepter::Accepter(Channel *channel, EventLoop *eventLoop)
 :   channel_(channel),
     eventLoop_(eventLoop)
-{
-
-
-}
+{ }
 
 
 Accepter::~Accepter() {
@@ -42,6 +39,11 @@ void Accepter::accept() {
     // 添加到EventLoop中，非阻塞IO和阻塞IO区别较大！
     eventLoop_->addInLoop(channel);
 
+}
+
+
+Channel* Accepter::getChannel() {
+    return &*channel_;
 }
 
 

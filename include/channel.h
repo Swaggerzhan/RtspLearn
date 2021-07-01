@@ -26,20 +26,22 @@ public:
     bool recv();
 
     Rtsp* getRtspController();
+    /* 获取接收缓冲区，主要是用于解析 */
+    Buffer* getRecvBuffer();
 
     /////////////////////////////////////////////////////////
     /// 非阻塞
     bool send2();
     bool recv2();
     /////////////////////////////////////////////////////////
-    void closeConn();
-
     /////////////////////////////////////////////////////////
     /// for debug
     bool status() { return isClosed_; }
     bool setClose() { isClosed_ = true; }
     /////////////////////////////////////////////////////////
     bool isOneShot() { return isOneShot_; }
+
+    void closeConn();
 
 public:
 

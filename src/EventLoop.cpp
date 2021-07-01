@@ -6,6 +6,7 @@
 #include "../include/EventLoop.h"
 #include "../include/channel.h"
 #include "../include/BlockQueue.h"
+#include "../include/Accepter.h"
 #include "../include/Rtsp.h"
 #include <iostream>
 #include <cerrno>
@@ -73,16 +74,17 @@ static void removeToEpoll(int epfd, Channel* channel){
 
 EventLoop::EventLoop(int listenfd)
 :   isQuit_(false),
-    listenChannel_(new Channel(listenfd)),
+    accepter_(new Accepter(new Channel, this)), // 初始化Accepter
     queue_(new BlockQueue(kOpenMax))
 {
+    /* 初始化Accepter监听套接字 */
+    accepter_->getChannel()->setfd(listenfd);
     epfd_ = epoll_create(5);
     eventArray_ = new Event[kOpenMax];
     Event event;        // 临时
-    event.data.ptr = &*listenChannel_;
+    event.data.ptr = accepter_->getChannel();
     event.events = EPOLLIN;     // 只需要监听接收事件
-    epoll_ctl(epfd_, EPOLL_CTL_ADD, listenChannel_->getfd(), &event);
-
+    epoll_ctl(epfd_, EPOLL_CTL_ADD, accepter_->getChannel()->getfd(), &event);
     cout << "EventLoop init OK !! " << endl;
 }
 
@@ -91,7 +93,7 @@ EventLoop::~EventLoop() {
     delete eventArray_;
 }
 
-
+/* 由Accepter进行调用 */
 void EventLoop::addInLoop(Channel* channel) {
 
     addToEpoll(epfd_, channel);     // 真正的添加到epoll中
@@ -119,9 +121,10 @@ void EventLoop::poll() {
     int ret = epoll_wait(epfd_, eventArray_, kOpenMax, 0);
     for (int i=0; i<ret; i++){
         Channel* channel = static_cast<Channel*>(eventArray_[i].data.ptr);
-        if ( channel == &*listenChannel_ ){ // 监听频道
-
+        if ( channel == accepter_->getChannel() ){ // 监听频道
+            accepter_->accept(); // 接受请求
         } else {
+            // if active Channel push them into activeChannel queue!
             activeChannel_.push(channel);
         }
     }
